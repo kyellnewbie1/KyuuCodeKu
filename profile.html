@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KyuuCode · Profil Akun</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Inter',sans-serif; background:#0b0d15; color:#e8edf5; min-height:100vh; }
+    a { text-decoration:none; color:inherit; }
+    button { cursor:pointer; font-family:inherit; border:none; outline:none; }
+    input, textarea { font-family:inherit; outline:none; border:none; }
+    .container { max-width:1280px; margin:0 auto; padding:0 24px; }
+    .flex { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+    .btn-primary {
+      background:linear-gradient(135deg,#4f46e5,#7c3aed); color:#fff; padding:10px 28px;
+      border-radius:40px; font-weight:600; font-size:0.95rem; transition:all 0.3s;
+      box-shadow:0 4px 20px rgba(79,70,229,0.3); display:inline-flex; align-items:center; gap:8px;
+    }
+    .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 30px rgba(79,70,229,0.5); }
+    .btn-secondary {
+      background:rgba(255,255,255,0.06); color:#e8edf5; padding:10px 28px; border-radius:40px;
+      font-weight:600; border:1px solid rgba(255,255,255,0.08); transition:all 0.3s;
+      display:inline-flex; align-items:center; gap:8px;
+    }
+    .btn-secondary:hover { background:rgba(255,255,255,0.12); }
+    .navbar {
+      padding:18px 0; border-bottom:1px solid rgba(255,255,255,0.04);
+      background:rgba(11,13,21,0.8); backdrop-filter:blur(16px); position:sticky; top:0; z-index:100;
+    }
+    .logo { font-size:1.6rem; font-weight:800; background:linear-gradient(135deg,#a78bfa,#4f46e5); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .nav-links { display:flex; align-items:center; gap:28px; list-style:none; }
+    .nav-links a { font-weight:500; font-size:0.95rem; color:#a0a9c4; transition:0.3s; }
+    .nav-links a:hover, .nav-links a.active { color:#e8edf5; }
+    .user-badge {
+      display:flex; align-items:center; gap:10px; background:rgba(255,255,255,0.05);
+      padding:6px 16px 6px 12px; border-radius:40px; border:1px solid rgba(255,255,255,0.06); cursor:pointer;
+    }
+    .user-badge .avatar {
+      width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#4f46e5,#7c3aed);
+      display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; color:#fff; overflow:hidden;
+    }
+    .user-badge .role-tag { font-size:0.7rem; background:rgba(79,70,229,0.25); padding:2px 12px; border-radius:20px; color:#a78bfa; font-weight:600; text-transform:uppercase; }
+    
+    .profile-card {
+      background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);
+      border-radius:32px; padding:40px; max-width:600px; margin:40px auto; backdrop-filter:blur(12px);
+    }
+    .avatar-upload-box {
+      display:flex; flex-direction:column; align-items:center; gap:12px; margin-bottom:28px; text-align:center;
+    }
+    .large-avatar {
+      width:100px; height:100px; border-radius:50%; background:linear-gradient(135deg,#4f46e5,#7c3aed);
+      display:flex; align-items:center; justify-content:center; font-size:2.5rem; font-weight:800;
+      color:#fff; overflow:hidden; border:3px solid rgba(167,139,250,0.5); position:relative;
+    }
+    .form-group { margin-bottom:20px; }
+    .form-group label { display:block; font-size:0.85rem; font-weight:600; margin-bottom:6px; color:#c8d0e6; }
+    .form-group input, .form-group textarea {
+      width:100%; padding:14px 18px; border-radius:16px; background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.06); color:#e8edf5; font-size:0.95rem; transition:0.3s;
+    }
+    .form-group input:focus, .form-group textarea:focus { border-color:#4f46e5; background:rgba(255,255,255,0.06); }
+    .toast-container { position:fixed; bottom:30px; right:30px; z-index:999; display:flex; flex-direction:column; gap:10px; }
+    .toast { padding:14px 24px; border-radius:16px; background:rgba(20,24,36,0.95); color:#e8edf5; font-size:0.9rem; border:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; gap:12px; }
+    .toast.success { border-left:4px solid #22c55e; }
+    .toast.error { border-left:4px solid #ef4444; }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container flex">
+      <a href="index.html" class="logo"><i class="fas fa-code"></i> KyuuCode</a>
+      <ul class="nav-links">
+        <li><a href="index.html">Beranda</a></li>
+        <li><a href="home.html">Snippet</a></li>
+        <li><a href="search.html">Cari</a></li>
+        <li><a href="list.html">Kategori</a></li>
+      </ul>
+      <div class="flex" style="gap:16px;">
+        <a href="profile.html" class="user-badge" id="userBadge">
+          <div class="avatar" id="userAvatar">U</div>
+          <span style="font-weight:500;font-size:0.9rem;" id="userName">User</span>
+          <span class="role-tag" id="userRole">user</span>
+        </a>
+        <button class="btn-secondary" style="padding:6px 16px;font-size:0.8rem;" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <div class="profile-card">
+      <h2 style="font-size:1.8rem;font-weight:800;margin-bottom:24px;text-align:center;">Pengaturan Profil</h2>
+      
+      <div class="avatar-upload-box">
+        <div class="large-avatar" id="largeAvatar">U</div>
+        <input type="file" id="avatarInput" accept="image/*" style="display:none;" />
+        <button type="button" class="btn-secondary" style="font-size:0.8rem;padding:6px 18px;" onclick="document.getElementById('avatarInput').click()">
+          <i class="fas fa-camera"></i> Ganti Foto Profil
+        </button>
+      </div>
+
+      <form id="profileForm">
+        <div class="form-group">
+          <label>Email (Tidak dapat diubah)</label>
+          <input type="text" id="profileEmail" disabled style="opacity:0.6;cursor:not-allowed;" />
+        </div>
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="profileUsername" required />
+        </div>
+        <div class="form-group">
+          <label>Bio Singkat</label>
+          <textarea id="profileBio" rows="3" placeholder="Tuliskan sedikit tentang Anda..."></textarea>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:24px;">
+          <a href="home.html" class="btn-secondary">Batal</a>
+          <button type="submit" class="btn-primary" id="saveProfileBtn"><i class="fas fa-save"></i> Simpan Profil</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="auth.js"></script>
+  <script>
+    let newAvatarUrl = null;
+
+    (async () => {
+      const session = await supabase.auth.getSession();
+      if (!session.data.session) {
+        window.location.href = 'auth.html';
+        return;
+      }
+      currentUser = session.data.session.user;
+      document.getElementById('profileEmail').value = currentUser.email || '';
+
+      await loadProfile(currentUser.id);
+
+      if (currentProfile) {
+        document.getElementById('profileUsername').value = currentProfile.username || '';
+        document.getElementById('profileBio').value = currentProfile.bio || '';
+        newAvatarUrl = currentProfile.avatar_url;
+        renderLargeAvatar();
+      }
+
+      // Handle Avatar Change
+      document.getElementById('avatarInput').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (file.size > 2 * 1024 * 1024) {
+          showToast('Ukuran gambar maksimal 2MB', 'error');
+          return;
+        }
+        showToast('Mengunggah gambar...', 'info');
+        const uploadedUrl = await uploadAvatarFile(file);
+        if (uploadedUrl) {
+          newAvatarUrl = uploadedUrl;
+          renderLargeAvatar();
+          showToast('Foto profil berhasil dipasang! Klik Simpan.', 'success');
+        }
+      });
+
+      // Submit Profile Form
+      document.getElementById('profileForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('profileUsername').value.trim();
+        const bio = document.getElementById('profileBio').value.trim();
+
+        if (!username) return showToast('Username tidak boleh kosong', 'error');
+
+        const success = await updateProfileData({
+          username,
+          bio,
+          avatar_url: newAvatarUrl
+        });
+
+        if (success) renderLargeAvatar();
+      });
+    })();
+
+    function renderLargeAvatar() {
+      const el = document.getElementById('largeAvatar');
+      if (newAvatarUrl) {
+        el.innerHTML = `<img src="${newAvatarUrl}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;">`;
+      } else {
+        const initial = (document.getElementById('profileUsername').value || 'U').charAt(0).toUpperCase();
+        el.textContent = initial;
+      }
+    }
+  </script>
+</body>
+</html>

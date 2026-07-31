@@ -11,11 +11,11 @@
   <style>
     /* Gaya dasar (sama seperti sebelumnya, ditambah tombol unduh) */
     * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family:'Inter',sans-serif; background:#0b0d15; color:#e8edf5; min-height:100vh; }
+    body { font-family:'Inter',sans-serif; background:#0b0d15; color:#e8edf5; min-height:100vh; display:flex; flex-direction:column; }
     a { text-decoration:none; color:inherit; }
     button { cursor:pointer; font-family:inherit; border:none; outline:none; }
     input, textarea, select { font-family:inherit; outline:none; border:none; }
-    .container { max-width:1280px; margin:0 auto; padding:0 24px; }
+    .container { max-width:1280px; margin:0 auto; padding:0 24px; width:100%; }
     .flex { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
     .grid-3 { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:24px; }
     .btn-primary {
@@ -74,6 +74,23 @@
       font-size:0.7rem; background:rgba(79,70,229,0.25); padding:2px 12px;
       border-radius:20px; color:#a78bfa; font-weight:600; text-transform:uppercase;
     }
+    
+    /* Filter Bar Addition */
+    .filter-bar {
+      display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; background: rgba(255,255,255,0.02);
+      padding: 16px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05);
+    }
+    .filter-input {
+      flex: 1; min-width: 200px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px; padding: 10px 16px; color: #e8edf5; font-size: 0.9rem; transition: 0.3s;
+    }
+    .filter-input:focus { border-color: #4f46e5; background: rgba(255,255,255,0.08); }
+    .filter-select {
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px; padding: 10px 16px; color: #e8edf5; font-size: 0.9rem; transition: 0.3s; cursor: pointer;
+    }
+    .filter-select option { background: #141824; color: #e8edf5; }
+
     .card-snippet {
       background:rgba(255,255,255,0.03); backdrop-filter:blur(12px);
       border:1px solid rgba(255,255,255,0.06); border-radius:20px; padding:24px;
@@ -81,7 +98,7 @@
       display:flex; flex-direction:column;
     }
     .card-snippet:hover { transform:translateY(-6px); border-color:rgba(79,70,229,0.3); box-shadow:0 20px 60px rgba(0,0,0,0.4); }
-    .card-snippet .title { font-size:1.15rem; font-weight:700; margin-bottom:6px; }
+    .card-snippet .title { font-size:1.15rem; font-weight:700; margin-bottom:6px; word-break: break-word; }
     .card-snippet .meta { display:flex; flex-wrap:wrap; gap:10px; margin:12px 0 16px; font-size:0.75rem; font-weight:500; }
     .card-snippet .meta span { background:rgba(255,255,255,0.06); padding:4px 14px; border-radius:40px; color:#a0a9c4; }
     .card-snippet .meta .lang { background:rgba(79,70,229,0.15); color:#a78bfa; }
@@ -108,7 +125,7 @@
     .card-snippet .actions button:hover { background:rgba(79,70,229,0.15); color:#e8edf5; border-color:rgba(79,70,229,0.3); }
     .card-snippet .admin-actions { display:flex; gap:8px; margin-top:14px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.04); flex-wrap:wrap; }
     .section-title { font-size:1.8rem; font-weight:700; margin-bottom:8px; }
-    .section-sub { color:#a0a9c4; margin-bottom:32px; font-size:1rem; }
+    .section-sub { color:#a0a9c4; margin-bottom:24px; font-size:1rem; }
     .empty-state { text-align:center; padding:60px 20px; color:#a0a9c4; grid-column:1/-1; }
     .empty-state i { font-size:3rem; margin-bottom:16px; opacity:0.3; }
     .modal-overlay {
@@ -189,6 +206,18 @@
         <button class="btn-primary" id="addBtn" style="display:none;"><i class="fas fa-plus"></i> Tambah</button>
       </div>
       <p class="section-sub" id="snippetCount">0 snippet tersimpan</p>
+
+      <!-- Fitur Pencarian & Filter Instan -->
+      <div class="filter-bar">
+        <input type="text" id="filterInput" class="filter-input" placeholder="🔍 Cari judul atau isi kode..." oninput="applyFilters()" />
+        <select id="filterCategory" class="filter-select" onchange="applyFilters()">
+          <option value="">Semua Kategori</option>
+        </select>
+        <select id="filterLanguage" class="filter-select" onchange="applyFilters()">
+          <option value="">Semua Bahasa</option>
+        </select>
+      </div>
+
       <div class="grid-3" id="snippetGrid"></div>
     </div>
   </main>
@@ -206,6 +235,7 @@
     }
 
     function formatFileSize(bytes) {
+      if (!bytes) return '0 B';
       if (bytes < 1024) return bytes + ' B';
       if (bytes < 1048576) return (bytes/1024).toFixed(1) + ' KB';
       return (bytes/1048576).toFixed(1) + ' MB';
@@ -248,18 +278,58 @@
       `;
     }
 
-    // ===== REFRESH =====
+    // ===== REFRESH & FILTER =====
+    function populateDropdowns() {
+      const catSelect = document.getElementById('filterCategory');
+      const langSelect = document.getElementById('filterLanguage');
+      
+      const currentCat = catSelect.value;
+      const currentLang = langSelect.value;
+
+      const categories = [...new Set(allSnippets.map(s => s.category || 'Umum'))];
+      const languages = [...new Set(allSnippets.map(s => s.language || 'text'))];
+
+      catSelect.innerHTML = '<option value="">Semua Kategori</option>' + categories.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+      langSelect.innerHTML = '<option value="">Semua Bahasa</option>' + languages.map(l => `<option value="${escapeHtml(l)}">${escapeHtml(l)}</option>`).join('');
+
+      catSelect.value = currentCat;
+      langSelect.value = currentLang;
+    }
+
+    function applyFilters() {
+      const search = document.getElementById('filterInput').value.toLowerCase();
+      const selectedCat = document.getElementById('filterCategory').value;
+      const selectedLang = document.getElementById('filterLanguage').value;
+
+      const filtered = allSnippets.filter(s => {
+        const matchesSearch = (s.title && s.title.toLowerCase().includes(search)) || (s.code && s.code.toLowerCase().includes(search));
+        const matchesCat = !selectedCat || (s.category || 'Umum') === selectedCat;
+        const matchesLang = !selectedLang || (s.language || 'text') === selectedLang;
+        return matchesSearch && matchesCat && matchesLang;
+      });
+
+      renderGrid(filtered);
+    }
+
+    function renderGrid(snippets) {
+      const isAdmin = currentProfile?.role === 'admin';
+      const grid = document.getElementById('snippetGrid');
+      
+      if (snippets.length === 0) {
+        grid.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>Tidak ada snippet yang cocok. ${isAdmin ? 'Klik "Tambah" untuk membuat.' : 'Hubungi admin untuk menambahkan.'}</p></div>`;
+      } else {
+        grid.innerHTML = snippets.map(s => renderSnippetCard(s, isAdmin)).join('');
+      }
+    }
+
     async function refreshSnippets() {
       await loadSnippets();
       const isAdmin = currentProfile?.role === 'admin';
       document.getElementById('addBtn').style.display = isAdmin ? 'inline-flex' : 'none';
       document.getElementById('snippetCount').textContent = allSnippets.length + ' snippet tersimpan';
-      const grid = document.getElementById('snippetGrid');
-      if (allSnippets.length === 0) {
-        grid.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>Belum ada snippet. ${isAdmin ? 'Klik "Tambah" untuk membuat.' : 'Hubungi admin untuk menambahkan.'}</p></div>`;
-      } else {
-        grid.innerHTML = allSnippets.map(s => renderSnippetCard(s, isAdmin)).join('');
-      }
+      
+      populateDropdowns();
+      applyFilters();
     }
 
     // ===== ACTION: COPY =====
@@ -286,7 +356,6 @@
       if (!snippet || !snippet.file_path) return showToast('File tidak tersedia','error');
       const url = getFileUrl(snippet.file_path);
       if (!url) return showToast('Gagal mendapatkan URL file','error');
-      // Buka di tab baru atau unduh langsung
       const a = document.createElement('a');
       a.href = url;
       a.download = snippet.file_name || 'snippet';
@@ -351,7 +420,6 @@
         </form>
       `);
 
-      // Event listener file upload
       const fileInput = document.getElementById('fileInput');
       const fileStatus = document.getElementById('fileStatus');
       const fileArea = document.getElementById('fileUploadArea');
@@ -375,7 +443,6 @@
         }
       });
 
-      // Submit form
       document.getElementById('snippetForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const title = document.getElementById('snippetTitle').value.trim();
@@ -386,7 +453,6 @@
         if (!title) return showToast('Judul wajib diisi','error');
         if (!code && !selectedFile) return showToast('Isi kode atau upload file','error');
 
-        // Baca file jika ada
         let finalCode = code;
         let filePath = null;
         let fileName = null;
@@ -394,9 +460,7 @@
 
         if (selectedFile) {
           try {
-            // Baca isi file sebagai teks untuk preview
             finalCode = await readFileAsText(selectedFile);
-            // Upload ke storage
             const uploadResult = await uploadSnippetFile(selectedFile, currentUser.id);
             if (!uploadResult) return;
             filePath = uploadResult.path;
@@ -422,7 +486,6 @@
         const { error } = await supabase.from('snippets').insert(payload);
         if (error) {
           showToast('Gagal menyimpan: ' + error.message, 'error');
-          // Hapus file yang sudah terupload jika gagal insert
           if (filePath) await deleteSnippetFile(filePath);
         } else {
           showToast('Snippet berhasil ditambahkan! ✨', 'success');
@@ -467,7 +530,6 @@
         </form>
       `);
 
-      // Event listener file upload
       const fileInput = document.getElementById('fileInput');
       const fileStatus = document.getElementById('fileStatus');
       const fileArea = document.getElementById('fileUploadArea');
@@ -505,14 +567,11 @@
         let fileName = snippet.file_name;
         let fileSize = snippet.file_size;
 
-        // Jika ada file baru, upload dan hapus file lama
         if (selectedFile) {
           try {
             finalCode = await readFileAsText(selectedFile);
-            // Upload file baru
             const uploadResult = await uploadSnippetFile(selectedFile, currentUser.id);
             if (!uploadResult) return;
-            // Hapus file lama jika ada
             if (snippet.file_path) {
               await deleteSnippetFile(snippet.file_path);
             }
@@ -539,7 +598,6 @@
         const { error } = await supabase.from('snippets').update(payload).eq('id', id);
         if (error) {
           showToast('Gagal memperbarui: ' + error.message, 'error');
-          // Jika gagal dan ada file baru, hapus file baru
           if (selectedFile && filePath !== snippet.file_path) {
             await deleteSnippetFile(filePath);
           }
@@ -556,7 +614,6 @@
       if (!confirm('Yakin ingin menghapus snippet ini?')) return;
 
       const snippet = allSnippets.find(s => s.id === id);
-      // Hapus file dari storage jika ada
       if (snippet?.file_path) {
         await deleteSnippetFile(snippet.file_path);
       }
@@ -582,6 +639,7 @@
       modalActive = true;
       overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
     }
+
     function closeModal() {
       const el = document.getElementById('modalOverlay');
       if (el) el.remove();
