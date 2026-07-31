@@ -8,11 +8,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
     <!-- 1. Supabase Library -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- 2. Config (window.supabase) -->
-    <script src="config.js">
-    </script>
+    <script src="config.js"></script>
 
     <style>
         * {
@@ -214,7 +212,7 @@
                 </button>
             </form>
             <div class="toggle-link">
-                Belum punya akun? <a href="#" id="showRegisterLink">Daftar</a>
+                Belum punya akun? <a href="javascript:void(0)" id="showRegisterLink">Daftar</a>
             </div>
         </div>
 
@@ -235,7 +233,7 @@
                 </button>
             </form>
             <div class="toggle-link">
-                Sudah punya akun? <a href="#" id="showLoginLink">Masuk</a>
+                Sudah punya akun? <a href="javascript:void(0)" id="showLoginLink">Masuk</a>
             </div>
         </div>
     </div>
@@ -243,223 +241,205 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <script>
-        // ================================================================
-        // PASTIKAN supabase TERSEDIA
-        // ================================================================
-        if (typeof window.supabase === 'undefined') {
-            alert('❌ ERROR: Supabase tidak terdefinisi. Periksa config.js!');
-            throw new Error('Supabase tidak terdefinisi');
-        }
-        const supabase = window.supabase;
+        document.addEventListener('DOMContentLoaded', () => {
+            // ================================================================
+            // ELEMEN DOM
+            // ================================================================
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const showRegisterLink = document.getElementById('showRegisterLink');
+            const showLoginLink = document.getElementById('showLoginLink');
 
-        // ================================================================
-        // ELEMEN
-        // ================================================================
-        const loginForm = document.getElementById('loginForm');
-        const registerForm = document.getElementById('registerForm');
-        const showRegisterLink = document.getElementById('showRegisterLink');
-        const showLoginLink = document.getElementById('showLoginLink');
+            const loginFormSubmit = document.getElementById('loginFormSubmit');
+            const registerFormSubmit = document.getElementById('registerFormSubmit');
+            const loginBtn = document.getElementById('loginBtn');
+            const registerBtn = document.getElementById('registerBtn');
 
-        const loginFormSubmit = document.getElementById('loginFormSubmit');
-        const registerFormSubmit = document.getElementById('registerFormSubmit');
-        const loginBtn = document.getElementById('loginBtn');
-        const registerBtn = document.getElementById('registerBtn');
+            const loginEmail = document.getElementById('loginEmail');
+            const loginPassword = document.getElementById('loginPassword');
+            const registerUsername = document.getElementById('registerUsername');
+            const registerEmail = document.getElementById('registerEmail');
+            const registerPassword = document.getElementById('registerPassword');
 
-        const loginEmail = document.getElementById('loginEmail');
-        const loginPassword = document.getElementById('loginPassword');
-        const registerUsername = document.getElementById('registerUsername');
-        const registerEmail = document.getElementById('registerEmail');
-        const registerPassword = document.getElementById('registerPassword');
+            const loginError = document.getElementById('loginError');
+            const registerError = document.getElementById('registerError');
 
-        const loginError = document.getElementById('loginError');
-        const registerError = document.getElementById('registerError');
+            // ================================================================
+            // TOGGLE FORM (Berfungsi langsung tanpa ketergantungan Supabase)
+            // ================================================================
+            function showLogin() {
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+                loginError.style.display = 'none';
+                registerError.style.display = 'none';
+            }
 
-        // ================================================================
-        // TOAST
-        // ================================================================
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            const icon = type === 'success' ? 'fa-check-circle' :
-                type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
-            toast.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
-            container.appendChild(toast);
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateX(40px)';
-                setTimeout(() => toast.remove(), 400);
-            }, 3500);
-        }
+            function showRegister() {
+                registerForm.classList.remove('hidden');
+                loginForm.classList.add('hidden');
+                loginError.style.display = 'none';
+                registerError.style.display = 'none';
+            }
 
-        // ================================================================
-        // TOGGLE FORM
-        // ================================================================
-        function showLogin() {
-            loginForm.classList.remove('hidden');
-            registerForm.classList.add('hidden');
-            loginError.style.display = 'none';
-            registerError.style.display = 'none';
-        }
+            if (showRegisterLink) {
+                showRegisterLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showRegister();
+                });
+            }
 
-        function showRegister() {
-            registerForm.classList.remove('hidden');
-            loginForm.classList.add('hidden');
-            loginError.style.display = 'none';
-            registerError.style.display = 'none';
-        }
+            if (showLoginLink) {
+                showLoginLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showLogin();
+                });
+            }
 
-        // ================================================================
-        // SET LOADING STATE
-        // ================================================================
-        function setLoading(btn, loading) {
-            if (loading) {
-                btn.disabled = true;
-                btn.innerHTML = '<span class="loading-spinner"></span> Memproses...';
-            } else {
-                btn.disabled = false;
-                // restore icon based on which button
-                if (btn.id === 'loginBtn') {
-                    btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Masuk';
-                } else if (btn.id === 'registerBtn') {
-                    btn.innerHTML = '<i class="fas fa-user-plus"></i> Daftar';
+            // ================================================================
+            // TOAST & HELPER UTILITIES
+            // ================================================================
+            function showToast(message, type = 'info') {
+                const container = document.getElementById('toastContainer');
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                const icon = type === 'success' ? 'fa-check-circle' :
+                    type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+                toast.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
+                container.appendChild(toast);
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(40px)';
+                    setTimeout(() => toast.remove(), 400);
+                }, 3500);
+            }
+
+            function setLoading(btn, loading) {
+                if (loading) {
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="loading-spinner"></span> Memproses...';
+                } else {
+                    btn.disabled = false;
+                    if (btn.id === 'loginBtn') {
+                        btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Masuk';
+                    } else if (btn.id === 'registerBtn') {
+                        btn.innerHTML = '<i class="fas fa-user-plus"></i> Daftar';
+                    }
                 }
             }
-        }
 
-        // ================================================================
-        // EVENT: Toggle Links
-        // ================================================================
-        showRegisterLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            showRegister();
-        });
-
-        showLoginLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            showLogin();
-        });
-
-        // ================================================================
-        // LOGIN
-        // ================================================================
-        loginFormSubmit.addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            // Reset error
-            loginError.style.display = 'none';
-            loginError.textContent = '';
-
-            const email = loginEmail.value.trim();
-            const password = loginPassword.value.trim();
-
-            if (!email || !password) {
-                loginError.textContent = 'Email dan password wajib diisi';
-                loginError.style.display = 'block';
+            // ================================================================
+            // VALIDASI INI SUPABASE TERSEDIA
+            // ================================================================
+            if (typeof window.supabase === 'undefined') {
+                console.error('❌ Supabase belum terdefinisi. Pastikan file config.js sudah benar.');
                 return;
             }
+            const supabase = window.supabase;
 
-            setLoading(loginBtn, true);
+            // ================================================================
+            // LOGIN SUBMIT
+            // ================================================================
+            loginFormSubmit.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                loginError.style.display = 'none';
+                loginError.textContent = '';
 
-            try {
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email,
-                    password
-                });
-                if (error) throw error;
-                showToast('Selamat datang kembali! 👋', 'success');
-                window.location.href = 'index.html';
-            } catch (err) {
-                loginError.textContent = err.message;
-                loginError.style.display = 'block';
-                setLoading(loginBtn, false);
-            }
-        });
+                const email = loginEmail.value.trim();
+                const password = loginPassword.value.trim();
 
-        // ================================================================
-        // REGISTER
-        // ================================================================
-        registerFormSubmit.addEventListener('submit', async function(e) {
-            e.preventDefault();
+                if (!email || !password) {
+                    loginError.textContent = 'Email dan password wajib diisi';
+                    loginError.style.display = 'block';
+                    return;
+                }
 
-            // Reset error
-            registerError.style.display = 'none';
-            registerError.textContent = '';
+                setLoading(loginBtn, true);
 
-            const username = registerUsername.value.trim();
-            const email = registerEmail.value.trim();
-            const password = registerPassword.value.trim();
-
-            if (!username || !email || !password) {
-                registerError.textContent = 'Semua field wajib diisi';
-                registerError.style.display = 'block';
-                return;
-            }
-            if (username.length < 2) {
-                registerError.textContent = 'Username minimal 2 karakter';
-                registerError.style.display = 'block';
-                return;
-            }
-            if (password.length < 6) {
-                registerError.textContent = 'Password minimal 6 karakter';
-                registerError.style.display = 'block';
-                return;
-            }
-
-            setLoading(registerBtn, true);
-
-            try {
-                const { data, error } = await supabase.auth.signUp({
-                    email,
-                    password,
-                    options: {
-                        data: { username }
-                    }
-                });
-
-                if (error) throw error;
-
-                // Jika user berhasil daftar
-                if (data?.user) {
-                    showToast('Akun berhasil dibuat! 🎉', 'success');
-                    // Redirect ke home
+                try {
+                    const { data, error } = await supabase.auth.signInWithPassword({
+                        email,
+                        password
+                    });
+                    if (error) throw error;
+                    showToast('Selamat datang kembali! 👋', 'success');
                     window.location.href = 'index.html';
-                } else {
-                    // Ini biasanya terjadi kalau email sudah terdaftar
-                    registerError.textContent = 'Gagal membuat akun. Coba lagi.';
+                } catch (err) {
+                    loginError.textContent = err.message;
+                    loginError.style.display = 'block';
+                    setLoading(loginBtn, false);
+                }
+            });
+
+            // ================================================================
+            // REGISTER SUBMIT
+            // ================================================================
+            registerFormSubmit.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                registerError.style.display = 'none';
+                registerError.textContent = '';
+
+                const username = registerUsername.value.trim();
+                const email = registerEmail.value.trim();
+                const password = registerPassword.value.trim();
+
+                if (!username || !email || !password) {
+                    registerError.textContent = 'Semua field wajib diisi';
+                    registerError.style.display = 'block';
+                    return;
+                }
+                if (username.length < 2) {
+                    registerError.textContent = 'Username minimal 2 karakter';
+                    registerError.style.display = 'block';
+                    return;
+                }
+                if (password.length < 6) {
+                    registerError.textContent = 'Password minimal 6 karakter';
+                    registerError.style.display = 'block';
+                    return;
+                }
+
+                setLoading(registerBtn, true);
+
+                try {
+                    const { data, error } = await supabase.auth.signUp({
+                        email,
+                        password,
+                        options: {
+                            data: { username }
+                        }
+                    });
+
+                    if (error) throw error;
+
+                    if (data?.user) {
+                        showToast('Akun berhasil dibuat! 🎉', 'success');
+                        window.location.href = 'index.html';
+                    } else {
+                        registerError.textContent = 'Gagal membuat akun. Coba lagi.';
+                        registerError.style.display = 'block';
+                        setLoading(registerBtn, false);
+                    }
+                } catch (err) {
+                    registerError.textContent = err.message;
                     registerError.style.display = 'block';
                     setLoading(registerBtn, false);
                 }
-            } catch (err) {
-                registerError.textContent = err.message;
-                registerError.style.display = 'block';
-                setLoading(registerBtn, false);
-            }
-        });
+            });
 
-        // ================================================================
-        // CEK SESSION
-        // ================================================================
-        (async function() {
-            try {
-                const { data } = await supabase.auth.getSession();
-                if (data.session) {
-                    window.location.href = 'index.html';
+            // ================================================================
+            // CEK SESSION
+            // ================================================================
+            (async function() {
+                try {
+                    const { data } = await supabase.auth.getSession();
+                    if (data?.session) {
+                        window.location.href = 'index.html';
+                    }
+                } catch (err) {
+                    console.error('Session check error:', err);
                 }
-            } catch (err) {
-                console.error('Session check error:', err);
-            }
-        })();
-
-        // ================================================================
-        // DEBUG: Cek apakah event listener sudah terpasang
-        // ================================================================
-        console.log('✅ auth.html loaded successfully!');
-        console.log('✅ Supabase client:', typeof supabase);
-        console.log('✅ Login form:', loginFormSubmit);
-        console.log('✅ Register form:', registerFormSubmit);
-        console.log('✅ Show register link:', showRegisterLink);
-        console.log('✅ Show login link:', showLoginLink);
+            })();
+        });
     </script>
 
 </body>
