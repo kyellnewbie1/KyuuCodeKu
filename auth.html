@@ -1,255 +1,466 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>KyuuCode · Masuk / Daftar</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  
-  <!-- Supabase Library -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Config (window.supabase) -->
-  <script src="config.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KyuuCode · Masuk / Daftar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
-  <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #0b0d15;
-      color: #e8edf5;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
-    .auth-box {
-      background: rgba(255,255,255,0.03);
-      backdrop-filter: blur(24px);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 40px;
-      padding: 48px 40px;
-      max-width: 440px;
-      width: 100%;
-      animation: fadeUp 0.8s ease forwards;
-    }
-    @keyframes fadeUp {
-      from { opacity:0; transform:translateY(30px); }
-      to { opacity:1; transform:translateY(0); }
-    }
-    .auth-box h2 { font-size:2rem; font-weight:800; margin-bottom:4px; }
-    .auth-box .sub { color:#a0a9c4; margin-bottom:32px; font-size:0.95rem; }
-    .auth-box label { display:block; font-weight:500; font-size:0.85rem; margin-bottom:6px; color:#c8d0e6; }
-    .auth-box input {
-      width:100%; padding:14px 18px; border-radius:16px;
-      background: rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06);
-      color:#e8edf5; font-size:0.95rem; transition:0.3s; margin-bottom:20px;
-    }
-    .auth-box input:focus {
-      border-color:#4f46e5; background:rgba(255,255,255,0.06);
-      box-shadow:0 0 0 4px rgba(79,70,229,0.1);
-    }
-    .btn-primary {
-      background: linear-gradient(135deg, #4f46e5, #7c3aed);
-      color:#fff; padding:14px; border-radius:40px; font-weight:600; font-size:1rem;
-      border:none; cursor:pointer; transition:0.3s; width:100%;
-      display:inline-flex; align-items:center; justify-content:center; gap:8px;
-    }
-    .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 30px rgba(79,70,229,0.5); }
-    .toggle-link { text-align:center; margin-top:20px; color:#a0a9c4; font-size:0.9rem; }
-    .toggle-link a { color:#a78bfa; font-weight:600; cursor:pointer; text-decoration:none; }
-    .toggle-link a:hover { color:#c4b5fd; }
-    .error-msg {
-      background: rgba(220,38,38,0.12); border:1px solid rgba(220,38,38,0.2);
-      color:#fca5a5; padding:10px 16px; border-radius:12px; font-size:0.85rem;
-      margin-bottom:16px; display:none;
-    }
-    .toast-container {
-      position:fixed; bottom:30px; right:30px; z-index:999;
-      display:flex; flex-direction:column; gap:10px;
-    }
-    .toast {
-      padding:14px 24px; border-radius:16px; background:rgba(20,24,36,0.95);
-      backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.06);
-      color:#e8edf5; font-size:0.9rem; font-weight:500;
-      box-shadow:0 12px 40px rgba(0,0,0,0.5);
-      animation: slideUp 0.4s ease forwards;
-      display:flex; align-items:center; gap:12px; min-width:260px;
-    }
-    .toast.success { border-left:4px solid #22c55e; }
-    .toast.error { border-left:4px solid #ef4444; }
-    .toast.info { border-left:4px solid #4f46e5; }
-    @keyframes slideUp {
-      from { opacity:0; transform:translateY(20px) scale(0.96); }
-      to { opacity:1; transform:translateY(0) scale(1); }
-    }
-    .hidden { display: none; }
-  </style>
+    <!-- 1. Supabase Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+    </script>
+    <!-- 2. Config (window.supabase) -->
+    <script src="config.js">
+    </script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0b0d15;
+            color: #e8edf5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        .auth-box {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 40px;
+            padding: 48px 40px;
+            max-width: 440px;
+            width: 100%;
+            animation: fadeUp 0.8s ease forwards;
+        }
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .auth-box h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+        .auth-box .sub {
+            color: #a0a9c4;
+            margin-bottom: 32px;
+            font-size: 0.95rem;
+        }
+        .auth-box label {
+            display: block;
+            font-weight: 500;
+            font-size: 0.85rem;
+            margin-bottom: 6px;
+            color: #c8d0e6;
+        }
+        .auth-box input {
+            width: 100%;
+            padding: 14px 18px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: #e8edf5;
+            font-size: 0.95rem;
+            transition: 0.3s;
+            margin-bottom: 20px;
+        }
+        .auth-box input:focus {
+            border-color: #4f46e5;
+            background: rgba(255, 255, 255, 0.06);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: #fff;
+            padding: 14px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 1rem;
+            border: none;
+            cursor: pointer;
+            transition: 0.3s;
+            width: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(79, 70, 229, 0.5);
+        }
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        .toggle-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #a0a9c4;
+            font-size: 0.9rem;
+        }
+        .toggle-link a {
+            color: #a78bfa;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .toggle-link a:hover {
+            color: #c4b5fd;
+        }
+        .error-msg {
+            background: rgba(220, 38, 38, 0.12);
+            border: 1px solid rgba(220, 38, 38, 0.2);
+            color: #fca5a5;
+            padding: 10px 16px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            margin-bottom: 16px;
+            display: none;
+        }
+        .toast-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            padding: 14px 24px;
+            border-radius: 16px;
+            background: rgba(20, 24, 36, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: #e8edf5;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.4s ease forwards;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 260px;
+        }
+        .toast.success {
+            border-left: 4px solid #22c55e;
+        }
+        .toast.error {
+            border-left: 4px solid #ef4444;
+        }
+        .toast.info {
+            border-left: 4px solid #4f46e5;
+        }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.96);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        .hidden {
+            display: none !important;
+        }
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
 </head>
 <body>
 
-<div class="auth-box">
-  <!-- ===== LOGIN FORM ===== -->
-  <div id="loginForm">
-    <h2>Selamat Datang</h2>
-    <p class="sub">Masuk ke KyuuCode</p>
-    <div class="error-msg" id="loginError"></div>
-    <form id="loginFormSubmit">
-      <label>Email</label>
-      <input type="email" id="loginEmail" placeholder="email@example.com" required />
-      <label>Kata Sandi</label>
-      <input type="password" id="loginPassword" placeholder="••••••••" required minlength="6" />
-      <button type="submit" class="btn-primary">
-        <i class="fas fa-sign-in-alt"></i> Masuk
-      </button>
-    </form>
-    <div class="toggle-link">
-      Belum punya akun? <a href="#" id="showRegister">Daftar</a>
+    <div class="auth-box">
+        <!-- ===== LOGIN FORM ===== -->
+        <div id="loginForm">
+            <h2>Selamat Datang</h2>
+            <p class="sub">Masuk ke KyuuCode</p>
+            <div class="error-msg" id="loginError"></div>
+            <form id="loginFormSubmit" autocomplete="off">
+                <label>Email</label>
+                <input type="email" id="loginEmail" placeholder="email@example.com" required />
+                <label>Kata Sandi</label>
+                <input type="password" id="loginPassword" placeholder="••••••••" required minlength="6" />
+                <button type="submit" class="btn-primary" id="loginBtn">
+                    <i class="fas fa-sign-in-alt"></i> Masuk
+                </button>
+            </form>
+            <div class="toggle-link">
+                Belum punya akun? <a href="#" id="showRegisterLink">Daftar</a>
+            </div>
+        </div>
+
+        <!-- ===== REGISTER FORM ===== -->
+        <div id="registerForm" class="hidden">
+            <h2>Buat Akun</h2>
+            <p class="sub">Mulai kumpulkan snippet Anda</p>
+            <div class="error-msg" id="registerError"></div>
+            <form id="registerFormSubmit" autocomplete="off">
+                <label>Username</label>
+                <input type="text" id="registerUsername" placeholder="username" required minlength="2" />
+                <label>Email</label>
+                <input type="email" id="registerEmail" placeholder="email@example.com" required />
+                <label>Kata Sandi</label>
+                <input type="password" id="registerPassword" placeholder="••••••••" required minlength="6" />
+                <button type="submit" class="btn-primary" id="registerBtn">
+                    <i class="fas fa-user-plus"></i> Daftar
+                </button>
+            </form>
+            <div class="toggle-link">
+                Sudah punya akun? <a href="#" id="showLoginLink">Masuk</a>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- ===== REGISTER FORM ===== -->
-  <div id="registerForm" class="hidden">
-    <h2>Buat Akun</h2>
-    <p class="sub">Mulai kumpulkan snippet Anda</p>
-    <div class="error-msg" id="registerError"></div>
-    <form id="registerFormSubmit">
-      <label>Username</label>
-      <input type="text" id="registerUsername" placeholder="username" required minlength="2" />
-      <label>Email</label>
-      <input type="email" id="registerEmail" placeholder="email@example.com" required />
-      <label>Kata Sandi</label>
-      <input type="password" id="registerPassword" placeholder="••••••••" required minlength="6" />
-      <button type="submit" class="btn-primary">
-        <i class="fas fa-user-plus"></i> Daftar
-      </button>
-    </form>
-    <div class="toggle-link">
-      Sudah punya akun? <a href="#" id="showLogin">Masuk</a>
-    </div>
-  </div>
-</div>
+    <div class="toast-container" id="toastContainer"></div>
 
-<div class="toast-container" id="toastContainer"></div>
+    <script>
+        // ================================================================
+        // PASTIKAN supabase TERSEDIA
+        // ================================================================
+        if (typeof window.supabase === 'undefined') {
+            alert('❌ ERROR: Supabase tidak terdefinisi. Periksa config.js!');
+            throw new Error('Supabase tidak terdefinisi');
+        }
+        const supabase = window.supabase;
 
-<script>
-  // ============================================================
-  // PASTIKAN supabase TERSEDIA
-  // ============================================================
-  if (typeof window.supabase === 'undefined') {
-    alert('❌ Error: Supabase tidak terdefinisi. Periksa config.js!');
-    throw new Error('Supabase tidak terdefinisi');
-  }
-  const supabase = window.supabase;
+        // ================================================================
+        // ELEMEN
+        // ================================================================
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const showRegisterLink = document.getElementById('showRegisterLink');
+        const showLoginLink = document.getElementById('showLoginLink');
 
-  // ===== TOAST =====
-  function showToast(message, type = 'info') {
-    const container = document.getElementById('toastContainer');
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    const icon = type === 'success' ? 'fa-check-circle' :
-                 type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
-    toast.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
-    container.appendChild(toast);
-    setTimeout(() => {
-      toast.style.opacity = '0';
-      toast.style.transform = 'translateX(40px)';
-      setTimeout(() => toast.remove(), 400);
-    }, 3500);
-  }
+        const loginFormSubmit = document.getElementById('loginFormSubmit');
+        const registerFormSubmit = document.getElementById('registerFormSubmit');
+        const loginBtn = document.getElementById('loginBtn');
+        const registerBtn = document.getElementById('registerBtn');
 
-  // ===== TOGGLE FORM =====
-  const loginForm = document.getElementById('loginForm');
-  const registerForm = document.getElementById('registerForm');
-  const showRegister = document.getElementById('showRegister');
-  const showLogin = document.getElementById('showLogin');
+        const loginEmail = document.getElementById('loginEmail');
+        const loginPassword = document.getElementById('loginPassword');
+        const registerUsername = document.getElementById('registerUsername');
+        const registerEmail = document.getElementById('registerEmail');
+        const registerPassword = document.getElementById('registerPassword');
 
-  showRegister.addEventListener('click', (e) => {
-    e.preventDefault();
-    loginForm.classList.add('hidden');
-    registerForm.classList.remove('hidden');
-  });
+        const loginError = document.getElementById('loginError');
+        const registerError = document.getElementById('registerError');
 
-  showLogin.addEventListener('click', (e) => {
-    e.preventDefault();
-    registerForm.classList.add('hidden');
-    loginForm.classList.remove('hidden');
-  });
+        // ================================================================
+        // TOAST
+        // ================================================================
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icon = type === 'success' ? 'fa-check-circle' :
+                type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+            toast.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(40px)';
+                setTimeout(() => toast.remove(), 400);
+            }, 3500);
+        }
 
-  // ===== LOGIN =====
-  document.getElementById('loginFormSubmit').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value.trim();
-    const errorEl = document.getElementById('loginError');
-    errorEl.style.display = 'none';
-    errorEl.textContent = '';
+        // ================================================================
+        // TOGGLE FORM
+        // ================================================================
+        function showLogin() {
+            loginForm.classList.remove('hidden');
+            registerForm.classList.add('hidden');
+            loginError.style.display = 'none';
+            registerError.style.display = 'none';
+        }
 
-    if (!email || !password) {
-      errorEl.textContent = 'Email dan password wajib diisi';
-      errorEl.style.display = 'block';
-      return;
-    }
+        function showRegister() {
+            registerForm.classList.remove('hidden');
+            loginForm.classList.add('hidden');
+            loginError.style.display = 'none';
+            registerError.style.display = 'none';
+        }
 
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      showToast('Selamat datang kembali! 👋', 'success');
-      window.location.href = 'index.html';
-    } catch (err) {
-      errorEl.textContent = err.message;
-      errorEl.style.display = 'block';
-    }
-  });
+        // ================================================================
+        // SET LOADING STATE
+        // ================================================================
+        function setLoading(btn, loading) {
+            if (loading) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="loading-spinner"></span> Memproses...';
+            } else {
+                btn.disabled = false;
+                // restore icon based on which button
+                if (btn.id === 'loginBtn') {
+                    btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Masuk';
+                } else if (btn.id === 'registerBtn') {
+                    btn.innerHTML = '<i class="fas fa-user-plus"></i> Daftar';
+                }
+            }
+        }
 
-  // ===== REGISTER =====
-  document.getElementById('registerFormSubmit').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const username = document.getElementById('registerUsername').value.trim();
-    const email = document.getElementById('registerEmail').value.trim();
-    const password = document.getElementById('registerPassword').value.trim();
-    const errorEl = document.getElementById('registerError');
-    errorEl.style.display = 'none';
-    errorEl.textContent = '';
+        // ================================================================
+        // EVENT: Toggle Links
+        // ================================================================
+        showRegisterLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            showRegister();
+        });
 
-    if (!username || !email || !password) {
-      errorEl.textContent = 'Semua field wajib diisi';
-      errorEl.style.display = 'block';
-      return;
-    }
-    if (username.length < 2) {
-      errorEl.textContent = 'Username minimal 2 karakter';
-      errorEl.style.display = 'block';
-      return;
-    }
+        showLoginLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            showLogin();
+        });
 
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { username } }
-      });
-      if (error) throw error;
-      showToast('Akun berhasil dibuat! 🎉', 'success');
-      window.location.href = 'index.html';
-    } catch (err) {
-      errorEl.textContent = err.message;
-      errorEl.style.display = 'block';
-    }
-  });
+        // ================================================================
+        // LOGIN
+        // ================================================================
+        loginFormSubmit.addEventListener('submit', async function(e) {
+            e.preventDefault();
 
-  // ===== CEK SESSION =====
-  (async () => {
-    try {
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
-        window.location.href = 'index.html';
-      }
-    } catch (err) {
-      console.error('Session check error:', err);
-    }
-  })();
-</script>
+            // Reset error
+            loginError.style.display = 'none';
+            loginError.textContent = '';
+
+            const email = loginEmail.value.trim();
+            const password = loginPassword.value.trim();
+
+            if (!email || !password) {
+                loginError.textContent = 'Email dan password wajib diisi';
+                loginError.style.display = 'block';
+                return;
+            }
+
+            setLoading(loginBtn, true);
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password
+                });
+                if (error) throw error;
+                showToast('Selamat datang kembali! 👋', 'success');
+                window.location.href = 'index.html';
+            } catch (err) {
+                loginError.textContent = err.message;
+                loginError.style.display = 'block';
+                setLoading(loginBtn, false);
+            }
+        });
+
+        // ================================================================
+        // REGISTER
+        // ================================================================
+        registerFormSubmit.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // Reset error
+            registerError.style.display = 'none';
+            registerError.textContent = '';
+
+            const username = registerUsername.value.trim();
+            const email = registerEmail.value.trim();
+            const password = registerPassword.value.trim();
+
+            if (!username || !email || !password) {
+                registerError.textContent = 'Semua field wajib diisi';
+                registerError.style.display = 'block';
+                return;
+            }
+            if (username.length < 2) {
+                registerError.textContent = 'Username minimal 2 karakter';
+                registerError.style.display = 'block';
+                return;
+            }
+            if (password.length < 6) {
+                registerError.textContent = 'Password minimal 6 karakter';
+                registerError.style.display = 'block';
+                return;
+            }
+
+            setLoading(registerBtn, true);
+
+            try {
+                const { data, error } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        data: { username }
+                    }
+                });
+
+                if (error) throw error;
+
+                // Jika user berhasil daftar
+                if (data?.user) {
+                    showToast('Akun berhasil dibuat! 🎉', 'success');
+                    // Redirect ke home
+                    window.location.href = 'index.html';
+                } else {
+                    // Ini biasanya terjadi kalau email sudah terdaftar
+                    registerError.textContent = 'Gagal membuat akun. Coba lagi.';
+                    registerError.style.display = 'block';
+                    setLoading(registerBtn, false);
+                }
+            } catch (err) {
+                registerError.textContent = err.message;
+                registerError.style.display = 'block';
+                setLoading(registerBtn, false);
+            }
+        });
+
+        // ================================================================
+        // CEK SESSION
+        // ================================================================
+        (async function() {
+            try {
+                const { data } = await supabase.auth.getSession();
+                if (data.session) {
+                    window.location.href = 'index.html';
+                }
+            } catch (err) {
+                console.error('Session check error:', err);
+            }
+        })();
+
+        // ================================================================
+        // DEBUG: Cek apakah event listener sudah terpasang
+        // ================================================================
+        console.log('✅ auth.html loaded successfully!');
+        console.log('✅ Supabase client:', typeof supabase);
+        console.log('✅ Login form:', loginFormSubmit);
+        console.log('✅ Register form:', registerFormSubmit);
+        console.log('✅ Show register link:', showRegisterLink);
+        console.log('✅ Show login link:', showLoginLink);
+    </script>
+
 </body>
 </html>
