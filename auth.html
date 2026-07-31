@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KyuuCode · Masuk / Daftar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0b0d15;
+      color: #e8edf5;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding:24px;
+    }
+    .auth-box {
+      background: rgba(255,255,255,0.03);
+      backdrop-filter: blur(24px);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 40px;
+      padding: 48px 40px;
+      max-width: 440px;
+      width: 100%;
+      animation: fadeUp 0.8s ease forwards;
+    }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(30px); }
+      to { opacity:1; transform:translateY(0); }
+    }
+    .auth-box h2 { font-size:2rem; font-weight:800; margin-bottom:4px; }
+    .auth-box .sub { color:#a0a9c4; margin-bottom:32px; font-size:0.95rem; }
+    .auth-box label { display:block; font-weight:500; font-size:0.85rem; margin-bottom:6px; color:#c8d0e6; }
+    .auth-box input {
+      width:100%; padding:14px 18px; border-radius:16px;
+      background: rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06);
+      color:#e8edf5; font-size:0.95rem; transition:0.3s; margin-bottom:20px;
+    }
+    .auth-box input:focus {
+      border-color:#4f46e5; background:rgba(255,255,255,0.06);
+      box-shadow:0 0 0 4px rgba(79,70,229,0.1);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      color:#fff; padding:14px; border-radius:40px; font-weight:600; font-size:1rem;
+      border:none; cursor:pointer; transition:0.3s; width:100%;
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    }
+    .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 30px rgba(79,70,229,0.5); }
+    .toggle-link { text-align:center; margin-top:20px; color:#a0a9c4; font-size:0.9rem; }
+    .toggle-link span { color:#a78bfa; font-weight:600; cursor:pointer; transition:0.3s; }
+    .toggle-link span:hover { color:#c4b5fd; }
+    .error-msg {
+      background: rgba(220,38,38,0.12); border:1px solid rgba(220,38,38,0.2);
+      color:#fca5a5; padding:10px 16px; border-radius:12px; font-size:0.85rem;
+      margin-bottom:16px; display:none;
+    }
+    .toast-container { position:fixed; bottom:30px; right:30px; z-index:999; display:flex; flex-direction:column; gap:10px; }
+    .toast {
+      padding:14px 24px; border-radius:16px; background:rgba(20,24,36,0.95);
+      backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.06);
+      color:#e8edf5; font-size:0.9rem; font-weight:500;
+      box-shadow:0 12px 40px rgba(0,0,0,0.5);
+      animation: slideUp 0.4s ease forwards;
+      display:flex; align-items:center; gap:12px; min-width:260px;
+    }
+    .toast.success { border-left:4px solid #22c55e; }
+    .toast.error { border-left:4px solid #ef4444; }
+    .toast.info { border-left:4px solid #4f46e5; }
+    @keyframes slideUp {
+      from { opacity:0; transform:translateY(20px) scale(0.96); }
+      to { opacity:1; transform:translateY(0) scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-box" id="authBox">
+    <h2 id="authTitle">Selamat Datang</h2>
+    <p class="sub" id="authSub">Masuk ke KyuuCode</p>
+    <div class="error-msg" id="authError"></div>
+    <form id="authForm">
+      <div id="usernameField" style="display:none;">
+        <label>Username</label>
+        <input type="text" id="authUsername" placeholder="username" />
+      </div>
+      <label>Email</label>
+      <input type="email" id="authEmail" placeholder="email@example.com" required />
+      <label>Kata Sandi</label>
+      <input type="password" id="authPassword" placeholder="••••••••" required minlength="6" />
+      <button type="submit" class="btn-primary" id="authBtn">
+        <i class="fas fa-sign-in-alt"></i> Masuk
+      </button>
+    </form>
+    <div class="toggle-link">
+      <span id="toggleText">Belum punya akun? <span id="toggleLink">Daftar</span></span>
+    </div>
+  </div>
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="auth.js"></script>
+  <script>
+    const isLogin = true;
+    const authTitle = document.getElementById('authTitle');
+    const authSub = document.getElementById('authSub');
+    const authBtn = document.getElementById('authBtn');
+    const authForm = document.getElementById('authForm');
+    const authError = document.getElementById('authError');
+    const usernameField = document.getElementById('usernameField');
+    const toggleLink = document.getElementById('toggleLink');
+    const toggleText = document.getElementById('toggleText');
+
+    function setMode(mode) {
+      if (mode === 'register') {
+        authTitle.textContent = 'Buat Akun';
+        authSub.textContent = 'Mulai kumpulkan snippet Anda';
+        authBtn.innerHTML = '<i class="fas fa-user-plus"></i> Daftar';
+        usernameField.style.display = 'block';
+        toggleText.innerHTML = 'Sudah punya akun? <span id="toggleLink">Masuk</span>';
+        document.getElementById('toggleLink').addEventListener('click', () => setMode('login'));
+      } else {
+        authTitle.textContent = 'Selamat Datang';
+        authSub.textContent = 'Masuk ke KyuuCode';
+        authBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Masuk';
+        usernameField.style.display = 'none';
+        toggleText.innerHTML = 'Belum punya akun? <span id="toggleLink">Daftar</span>';
+        document.getElementById('toggleLink').addEventListener('click', () => setMode('register'));
+      }
+    }
+
+    // Toggle
+    toggleLink.addEventListener('click', () => {
+      const isLoginMode = authTitle.textContent.includes('Selamat Datang');
+      setMode(isLoginMode ? 'register' : 'login');
+    });
+
+    authForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      authError.style.display = 'none';
+      authError.textContent = '';
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value.trim();
+      const isLoginMode = authTitle.textContent.includes('Selamat Datang');
+      const username = document.getElementById('authUsername')?.value.trim();
+
+      if (!email || !password) {
+        authError.textContent = 'Email dan password wajib diisi';
+        authError.style.display = 'block';
+        return;
+      }
+      if (!isLoginMode && (!username || username.length < 2)) {
+        authError.textContent = 'Username minimal 2 karakter';
+        authError.style.display = 'block';
+        return;
+      }
+
+      try {
+        if (isLoginMode) {
+          const { error } = await supabase.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+          showToast('Selamat datang kembali! 👋', 'success');
+          window.location.href = 'index.html';
+        } else {
+          const { error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: { data: { username } }
+          });
+          if (error) throw error;
+          showToast('Akun berhasil dibuat! 🎉', 'success');
+          window.location.href = 'index.html';
+        }
+      } catch (err) {
+        authError.textContent = err.message;
+        authError.style.display = 'block';
+      }
+    });
+
+    // Cek session, jika sudah login redirect ke index
+    (async () => {
+      const session = await supabase.auth.getSession();
+      if (session.data.session) {
+        window.location.href = 'index.html';
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KyuuCode · Cari Snippet</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0b0d15;
+      color: #e8edf5;
+      min-height: 100vh;
+    }
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+    button {
+      cursor: pointer;
+      font-family: inherit;
+      border: none;
+      outline: none;
+    }
+    input,
+    select {
+      font-family: inherit;
+      outline: none;
+      border: none;
+    }
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    .flex {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 24px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      color: #fff;
+      padding: 10px 28px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: all 0.3s;
+      box-shadow: 0 4px 20px rgba(79, 70, 229, 0.3);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 8px 30px rgba(79, 70, 229, 0.5);
+    }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(8px);
+      color: #e8edf5;
+      padding: 10px 28px;
+      border-radius: 40px;
+      font-weight: 600;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+    .btn-danger {
+      background: #dc2626;
+      color: #fff;
+      padding: 8px 20px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: 0.3s;
+    }
+    .btn-danger:hover {
+      background: #b91c1c;
+      transform: scale(1.03);
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid #4f46e5;
+      color: #4f46e5;
+      padding: 8px 20px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: 0.3s;
+    }
+    .btn-outline:hover {
+      background: #4f46e5;
+      color: #fff;
+    }
+    .btn-success {
+      background: #16a34a;
+      color: #fff;
+      padding: 8px 20px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-success:hover {
+      background: #15803d;
+      transform: scale(1.03);
+    }
+    .navbar {
+      padding: 18px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      background: rgba(11, 13, 21, 0.8);
+      backdrop-filter: blur(16px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .navbar .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .logo {
+      font-size: 1.6rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #a78bfa, #4f46e5);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
+    }
+    .logo i {
+      -webkit-text-fill-color: initial;
+      color: #a78bfa;
+      margin-right: 6px;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+      flex-wrap: wrap;
+    }
+    .nav-links a {
+      font-weight: 500;
+      font-size: 0.95rem;
+      color: #a0a9c4;
+      transition: color 0.3s;
+    }
+    .nav-links a:hover {
+      color: #e8edf5;
+    }
+    .nav-links a.active {
+      color: #e8edf5;
+      position: relative;
+    }
+    .nav-links a.active::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, #4f46e5, #a78bfa);
+      border-radius: 4px;
+    }
+    .user-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 6px 16px 6px 12px;
+      border-radius: 40px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .user-badge .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: #fff;
+    }
+    .user-badge .role-tag {
+      font-size: 0.7rem;
+      background: rgba(79, 70, 229, 0.25);
+      padding: 2px 12px;
+      border-radius: 20px;
+      color: #a78bfa;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .card-snippet {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 20px;
+      padding: 24px;
+      transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+      display: flex;
+      flex-direction: column;
+    }
+    .card-snippet:hover {
+      transform: translateY(-6px);
+      border-color: rgba(79, 70, 229, 0.3);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    }
+    .card-snippet .title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .card-snippet .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 12px 0 16px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    .card-snippet .meta span {
+      background: rgba(255, 255, 255, 0.06);
+      padding: 4px 14px;
+      border-radius: 40px;
+      color: #a0a9c4;
+    }
+    .card-snippet .meta .lang {
+      background: rgba(79, 70, 229, 0.15);
+      color: #a78bfa;
+    }
+    .card-snippet .meta .file-badge {
+      background: rgba(22, 163, 74, 0.15);
+      color: #4ade80;
+    }
+    .card-snippet .code-preview {
+      background: #0b0d15;
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      color: #b0b8d4;
+      overflow: hidden;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 100px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      position: relative;
+      flex: 1;
+    }
+    .card-snippet .code-preview .fade {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 40px;
+      background: linear-gradient(transparent, #0b0d15);
+    }
+    .card-snippet .actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 18px;
+    }
+    .card-snippet .actions button {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: #a0a9c4;
+      padding: 6px 16px;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      transition: 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .card-snippet .actions button:hover {
+      background: rgba(79, 70, 229, 0.15);
+      color: #e8edf5;
+      border-color: rgba(79, 70, 229, 0.3);
+    }
+    .card-snippet .admin-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      flex-wrap: wrap;
+    }
+    .section-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .section-sub {
+      color: #a0a9c4;
+      margin-bottom: 32px;
+      font-size: 1rem;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #a0a9c4;
+      grid-column: 1/-1;
+    }
+    .empty-state i {
+      font-size: 3rem;
+      margin-bottom: 16px;
+      opacity: 0.3;
+    }
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      animation: fadeUp 0.3s ease;
+    }
+    .modal-box {
+      background: #141824;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 32px;
+      padding: 40px;
+      max-width: 600px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-box h3 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+    .modal-box label {
+      display: block;
+      font-weight: 500;
+      font-size: 0.85rem;
+      margin-bottom: 4px;
+      color: #c8d0e6;
+    }
+    .modal-box input,
+    .modal-box textarea,
+    .modal-box select {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: #e8edf5;
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+      transition: 0.3s;
+    }
+    .modal-box input:focus,
+    .modal-box textarea:focus,
+    .modal-box select:focus {
+      border-color: #4f46e5;
+      background: rgba(255, 255, 255, 0.06);
+      box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.08);
+    }
+    .modal-box textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+    .modal-box .file-upload-area {
+      border: 2px dashed rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 16px;
+      transition: 0.3s;
+      cursor: pointer;
+    }
+    .modal-box .file-upload-area:hover {
+      border-color: rgba(79, 70, 229, 0.4);
+      background: rgba(79, 70, 229, 0.04);
+    }
+    .modal-box .file-upload-area .file-info {
+      color: #a0a9c4;
+      font-size: 0.85rem;
+    }
+    .modal-box .file-upload-area .file-info strong {
+      color: #e8edf5;
+    }
+    .modal-box .file-upload-area input[type="file"] {
+      display: none;
+    }
+    .modal-box .modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    .toast-container {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .toast {
+      padding: 14px 24px;
+      border-radius: 16px;
+      background: rgba(20, 24, 36, 0.95);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: #e8edf5;
+      font-size: 0.9rem;
+      font-weight: 500;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+      animation: slideUp 0.4s ease forwards;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 260px;
+    }
+    .toast.success {
+      border-left: 4px solid #22c55e;
+    }
+    .toast.error {
+      border-left: 4px solid #ef4444;
+    }
+    .toast.info {
+      border-left: 4px solid #4f46e5;
+    }
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.96);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    @media (max-width: 768px) {
+      .grid-3 {
+        grid-template-columns: 1fr;
+      }
+      .nav-links {
+        gap: 14px;
+        font-size: 0.85rem;
+      }
+    }
+    @media (max-width: 480px) {
+      .navbar .container {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .nav-links {
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="logo"><i class="fas fa-code"></i> KyuuCode</a>
+      <ul class="nav-links">
+        <li><a href="index.html">Beranda</a></li>
+        <li><a href="home.html">Snippet</a></li>
+        <li><a href="search.html" class="active">Cari</a></li>
+        <li><a href="list.html">Kategori</a></li>
+      </ul>
+      <div class="flex" style="gap:16px;">
+        <div class="user-badge" id="userBadge">
+          <div class="avatar" id="userAvatar">U</div>
+          <span style="font-weight:500;font-size:0.9rem;" id="userName">User</span>
+          <span class="role-tag" id="userRole">user</span>
+        </div>
+        <button class="btn-secondary" style="padding:6px 16px;font-size:0.8rem;" onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main style="flex:1;padding:40px 0 60px;">
+    <div class="container">
+      <h2 class="section-title">🔍 Cari Snippet</h2>
+      <p class="section-sub">Temukan kode berdasarkan judul, bahasa, atau kategori</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:32px;">
+        <input type="text" id="searchInput" placeholder="Kata kunci..." style="flex:1;min-width:200px;padding:14px 20px;border-radius:40px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);color:#e8edf5;font-size:0.95rem;" />
+        <select id="searchLang" style="padding:14px 20px;border-radius:40px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);color:#e8edf5;font-size:0.9rem;">
+          <option value="">Semua Bahasa</option>
+        </select>
+        <select id="searchCategory" style="padding:14px 20px;border-radius:40px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);color:#e8edf5;font-size:0.9rem;">
+          <option value="">Semua Kategori</option>
+        </select>
+      </div>
+      <div class="grid-3" id="searchResults"></div>
+    </div>
+  </main>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="auth.js"></script>
+  <script>
+    // ===== UTILITY SAMA SEPERTI HOME.HTML =====
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function formatFileSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / 1048576).toFixed(1) + ' MB';
+    }
+
+    // ===== RENDER CARD =====
+    function renderSnippetCard(s, isAdmin) {
+      const codePreview = s.code ? (s.code.length > 120 ? s.code.slice(0, 120) + '…' : s.code) : '(tidak ada kode)';
+      const hasFile = s.file_path && s.file_name;
+      const fileUrl = hasFile ? getFileUrl(s.file_path) : null;
+
+      return `
+        <div class="card-snippet" data-id="${s.id}">
+          <div class="title">${escapeHtml(s.title || 'Untitled')}</div>
+          <div class="meta">
+            <span class="lang"><i class="fas fa-tag"></i> ${escapeHtml(s.language || 'text')}</span>
+            <span><i class="fas fa-folder"></i> ${escapeHtml(s.category || 'Umum')}</span>
+            ${hasFile ? `<span class="file-badge"><i class="fas fa-paperclip"></i> ${escapeHtml(s.file_name)} (${formatFileSize(s.file_size)})</span>` : ''}
+          </div>
+          <div class="code-preview">
+            <code>${escapeHtml(codePreview)}</code>
+            <div class="fade"></div>
+          </div>
+          <div class="actions">
+            <button onclick="copyCode('${s.id}')"><i class="fas fa-copy"></i> Salin</button>
+            ${hasFile && fileUrl ? `<button onclick="downloadFile('${s.id}')" class="btn-success" style="padding:6px 16px;font-size:0.8rem;"><i class="fas fa-download"></i> Unduh</button>` : ''}
+            <button onclick="viewFullCode('${s.id}')"><i class="fas fa-eye"></i> Lihat</button>
+          </div>
+          ${isAdmin ? `
+            <div class="admin-actions">
+              <button class="btn-outline" style="font-size:0.75rem;padding:4px 14px;" onclick="editSnippet('${s.id}')">
+                <i class="fas fa-edit"></i> Edit
+              </button>
+              <button class="btn-danger" style="font-size:0.75rem;padding:4px 14px;" onclick="deleteSnippet('${s.id}')">
+                <i class="fas fa-trash"></i> Hapus
+              </button>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }
+
+    // ===== FUNGSI COPY, DOWNLOAD, VIEW, EDIT, DELETE =====
+    // Semua fungsi ini menggunakan global allSnippets, currentUser, currentProfile, supabase
+
+    function copyCode(id) {
+      const snippet = allSnippets.find(s => s.id === id);
+      if (!snippet) return showToast('Snippet tidak ditemukan', 'error');
+      if (!snippet.code) return showToast('Tidak ada kode untuk disalin', 'error');
+      navigator.clipboard.writeText(snippet.code).then(() => {
+        showToast('Kode disalin ke clipboard! 📋', 'success');
+      }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = snippet.code;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+        showToast('Kode disalin!', 'success');
+      });
+    }
+
+    function downloadFile(id) {
+      const snippet = allSnippets.find(s => s.id === id);
+      if (!snippet || !snippet.file_path) return showToast('File tidak tersedia', 'error');
+      const url = getFileUrl(snippet.file_path);
+      if (!url) return showToast('Gagal mendapatkan URL file', 'error');
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = snippet.file_name || 'snippet';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      showToast('Mengunduh ' + snippet.file_name, 'success');
+    }
+
+    function viewFullCode(id) {
+      const snippet = allSnippets.find(s => s.id === id);
+      if (!snippet) return showToast('Snippet tidak ditemukan', 'error');
+      const fileUrl = snippet.file_path ? getFileUrl(snippet.file_path) : null;
+      showModal(`
+        <h3>${escapeHtml(snippet.title)}</h3>
+        <div style="color:#a0a9c4;font-size:0.85rem;margin-bottom:12px;">
+          <span>${escapeHtml(snippet.language)}</span> · <span>${escapeHtml(snippet.category)}</span>
+          ${snippet.file_name ? ` · <span><i class="fas fa-paperclip"></i> ${escapeHtml(snippet.file_name)}</span>` : ''}
+        </div>
+        <pre style="background:#0b0d15;padding:20px;border-radius:16px;overflow:auto;max-height:400px;font-size:0.8rem;border:1px solid rgba(255,255,255,0.04);">${escapeHtml(snippet.code || '(tidak ada kode)')}</pre>
+        <div style="margin-top:16px;display:flex;gap:12px;justify-content:flex-end;flex-wrap:wrap;">
+          <button class="btn-primary" onclick="copyCode('${snippet.id}');closeModal();"><i class="fas fa-copy"></i> Salin</button>
+          ${fileUrl ? `<button class="btn-success" onclick="downloadFile('${snippet.id}');closeModal();"><i class="fas fa-download"></i> Unduh</button>` : ''}
+          <button class="btn-secondary" onclick="closeModal()">Tutup</button>
+        </div>
+      `);
+    }
+
+    // ===== MODAL TAMBAH / EDIT (sama seperti home.html) =====
+    let editingId = null;
+    let selectedFile = null;
+
+    function openAddModal() {
+      if (currentProfile?.role !== 'admin') return showToast('Hanya admin yang dapat menambahkan', 'error');
+      editingId = null;
+      selectedFile = null;
+      showModal(`
+        <h3><i class="fas fa-plus-circle" style="color:#a78bfa;"></i> Tambah Snippet</h3>
+        <form id="snippetForm">
+          <label>Judul *</label>
+          <input type="text" id="snippetTitle" placeholder="Nama snippet" required />
+          <label>Bahasa</label>
+          <input type="text" id="snippetLang" placeholder="JavaScript, Python, Go, ..." />
+          <label>Kategori</label>
+          <input type="text" id="snippetCat" placeholder="Frontend, Backend, Utility, ..." />
+          <label>Kode (tempelkan di sini, atau upload file)</label>
+          <textarea id="snippetCode" placeholder="Tulis kode di sini..." style="min-height:100px;"></textarea>
+          <label>Atau upload file (max 1MB)</label>
+          <div class="file-upload-area" id="fileUploadArea">
+            <div class="file-info">
+              <i class="fas fa-cloud-upload-alt" style="font-size:2rem;color:#4f46e5;display:block;margin-bottom:8px;"></i>
+              <span id="fileStatus">Klik untuk pilih file</span>
+              <div style="font-size:0.75rem;color:#666;margin-top:4px;">.js .py .html .css .json .txt dan lainnya</div>
+            </div>
+            <input type="file" id="fileInput" accept=".js,.py,.html,.css,.json,.txt,.ts,.jsx,.tsx,.java,.go,.rs,.c,.cpp,.h,.sh,.yml,.yaml,.toml,.xml,.sql,.md" />
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" onclick="closeModal()">Batal</button>
+            <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Simpan</button>
+          </div>
+        </form>
+      `);
+
+      const fileInput = document.getElementById('fileInput');
+      const fileStatus = document.getElementById('fileStatus');
+      const fileArea = document.getElementById('fileUploadArea');
+
+      fileArea.addEventListener('click', () => fileInput.click());
+      fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          if (file.size > 1024 * 1024) {
+            showToast('Ukuran file maksimal 1MB', 'error');
+            fileInput.value = '';
+            fileStatus.innerHTML = 'Klik untuk pilih file';
+            selectedFile = null;
+            return;
+          }
+          selectedFile = file;
+          fileStatus.innerHTML = `<strong>${escapeHtml(file.name)}</strong> (${formatFileSize(file.size)})`;
+        } else {
+          selectedFile = null;
+          fileStatus.innerHTML = 'Klik untuk pilih file';
+        }
+      });
+
+      document.getElementById('snippetForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const title = document.getElementById('snippetTitle').value.trim();
+        const language = document.getElementById('snippetLang').value.trim() || 'text';
+        const category = document.getElementById('snippetCat').value.trim() || 'Umum';
+        const code = document.getElementById('snippetCode').value.trim();
+
+        if (!title) return showToast('Judul wajib diisi', 'error');
+        if (!code && !selectedFile) return showToast('Isi kode atau upload file', 'error');
+
+        let finalCode = code;
+        let filePath = null;
+        let fileName = null;
+        let fileSize = null;
+
+        if (selectedFile) {
+          try {
+            finalCode = await readFileAsText(selectedFile);
+            const uploadResult = await uploadSnippetFile(selectedFile, currentUser.id);
+            if (!uploadResult) return;
+            filePath = uploadResult.path;
+            fileName = uploadResult.name;
+            fileSize = uploadResult.size;
+          } catch (err) {
+            showToast('Gagal membaca file: ' + err.message, 'error');
+            return;
+          }
+        }
+
+        const payload = {
+          title,
+          language,
+          category,
+          code: finalCode,
+          user_id: currentUser.id,
+          file_path: filePath,
+          file_name: fileName,
+          file_size: fileSize,
+        };
+
+        const { error } = await supabase.from('snippets').insert(payload);
+        if (error) {
+          showToast('Gagal menyimpan: ' + error.message, 'error');
+          if (filePath) await deleteSnippetFile(filePath);
+        } else {
+          showToast('Snippet berhasil ditambahkan! ✨', 'success');
+          closeModal();
+          performSearch();
+        }
+      });
+    }
+
+    function editSnippet(id) {
+      if (currentProfile?.role !== 'admin') return showToast('Hanya admin yang dapat mengedit', 'error');
+      const snippet = allSnippets.find(s => s.id === id);
+      if (!snippet) return showToast('Snippet tidak ditemukan', 'error');
+      editingId = id;
+      selectedFile = null;
+
+      showModal(`
+        <h3><i class="fas fa-edit" style="color:#a78bfa;"></i> Edit Snippet</h3>
+        <form id="snippetForm">
+          <label>Judul *</label>
+          <input type="text" id="snippetTitle" value="${escapeHtml(snippet.title)}" required />
+          <label>Bahasa</label>
+          <input type="text" id="snippetLang" value="${escapeHtml(snippet.language || '')}" />
+          <label>Kategori</label>
+          <input type="text" id="snippetCat" value="${escapeHtml(snippet.category || '')}" />
+          <label>Kode</label>
+          <textarea id="snippetCode" style="min-height:100px;">${escapeHtml(snippet.code || '')}</textarea>
+          ${snippet.file_name ? `<div style="color:#4ade80;font-size:0.85rem;margin-bottom:12px;"><i class="fas fa-paperclip"></i> File saat ini: ${escapeHtml(snippet.file_name)} (${formatFileSize(snippet.file_size)})</div>` : ''}
+          <label>Ganti dengan file baru (opsional, max 1MB)</label>
+          <div class="file-upload-area" id="fileUploadArea">
+            <div class="file-info">
+              <i class="fas fa-cloud-upload-alt" style="font-size:2rem;color:#4f46e5;display:block;margin-bottom:8px;"></i>
+              <span id="fileStatus">Klik untuk pilih file</span>
+              <div style="font-size:0.75rem;color:#666;margin-top:4px;">.js .py .html .css .json .txt dan lainnya</div>
+            </div>
+            <input type="file" id="fileInput" accept=".js,.py,.html,.css,.json,.txt,.ts,.jsx,.tsx,.java,.go,.rs,.c,.cpp,.h,.sh,.yml,.yaml,.toml,.xml,.sql,.md" />
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" onclick="closeModal()">Batal</button>
+            <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Perbarui</button>
+          </div>
+        </form>
+      `);
+
+      const fileInput = document.getElementById('fileInput');
+      const fileStatus = document.getElementById('fileStatus');
+      const fileArea = document.getElementById('fileUploadArea');
+
+      fileArea.addEventListener('click', () => fileInput.click());
+      fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          if (file.size > 1024 * 1024) {
+            showToast('Ukuran file maksimal 1MB', 'error');
+            fileInput.value = '';
+            fileStatus.innerHTML = 'Klik untuk pilih file';
+            selectedFile = null;
+            return;
+          }
+          selectedFile = file;
+          fileStatus.innerHTML = `<strong>${escapeHtml(file.name)}</strong> (${formatFileSize(file.size)})`;
+        } else {
+          selectedFile = null;
+          fileStatus.innerHTML = 'Klik untuk pilih file';
+        }
+      });
+
+      document.getElementById('snippetForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const title = document.getElementById('snippetTitle').value.trim();
+        const language = document.getElementById('snippetLang').value.trim() || 'text';
+        const category = document.getElementById('snippetCat').value.trim() || 'Umum';
+        const code = document.getElementById('snippetCode').value.trim();
+
+        if (!title) return showToast('Judul wajib diisi', 'error');
+
+        let finalCode = code;
+        let filePath = snippet.file_path;
+        let fileName = snippet.file_name;
+        let fileSize = snippet.file_size;
+
+        if (selectedFile) {
+          try {
+            finalCode = await readFileAsText(selectedFile);
+            const uploadResult = await uploadSnippetFile(selectedFile, currentUser.id);
+            if (!uploadResult) return;
+            if (snippet.file_path) {
+              await deleteSnippetFile(snippet.file_path);
+            }
+            filePath = uploadResult.path;
+            fileName = uploadResult.name;
+            fileSize = uploadResult.size;
+          } catch (err) {
+            showToast('Gagal membaca file: ' + err.message, 'error');
+            return;
+          }
+        }
+
+        const payload = {
+          title,
+          language,
+          category,
+          code: finalCode,
+          file_path: filePath,
+          file_name: fileName,
+          file_size: fileSize,
+          updated_at: new Date(),
+        };
+
+        const { error } = await supabase.from('snippets').update(payload).eq('id', id);
+        if (error) {
+          showToast('Gagal memperbarui: ' + error.message, 'error');
+          if (selectedFile && filePath !== snippet.file_path) {
+            await deleteSnippetFile(filePath);
+          }
+        } else {
+          showToast('Snippet diperbarui! ✅', 'success');
+          closeModal();
+          performSearch();
+        }
+      });
+    }
+
+    async function deleteSnippet(id) {
+      if (currentProfile?.role !== 'admin') return showToast('Hanya admin yang dapat menghapus', 'error');
+      if (!confirm('Yakin ingin menghapus snippet ini?')) return;
+
+      const snippet = allSnippets.find(s => s.id === id);
+      if (snippet?.file_path) {
+        await deleteSnippetFile(snippet.file_path);
+      }
+
+      const { error } = await supabase.from('snippets').delete().eq('id', id);
+      if (error) {
+        showToast('Gagal menghapus: ' + error.message, 'error');
+      } else {
+        showToast('Snippet dihapus 🗑️', 'success');
+        performSearch();
+      }
+    }
+
+    // ===== MODAL HELPER =====
+    let modalActive = false;
+
+    function showModal(html) {
+      closeModal();
+      const overlay = document.createElement('div');
+      overlay.className = 'modal-overlay';
+      overlay.id = 'modalOverlay';
+      overlay.innerHTML = `<div class="modal-box">${html}</div>`;
+      document.body.appendChild(overlay);
+      modalActive = true;
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeModal();
+      });
+    }
+
+    function closeModal() {
+      const el = document.getElementById('modalOverlay');
+      if (el) el.remove();
+      modalActive = false;
+      selectedFile = null;
+    }
+
+    // ===== SEARCH FUNCTION =====
+    async function performSearch() {
+      await loadSnippets();
+      const q = document.getElementById('searchInput').value.toLowerCase().trim();
+      const lang = document.getElementById('searchLang').value;
+      const cat = document.getElementById('searchCategory').value;
+
+      const filtered = allSnippets.filter(s => {
+        const matchTitle = s.title?.toLowerCase().includes(q);
+        const matchCat = s.category?.toLowerCase().includes(q);
+        const matchLang = lang ? s.language === lang : true;
+        const matchCategory = cat ? s.category === cat : true;
+        return (matchTitle || matchCat) && matchLang && matchCategory;
+      });
+
+      const isAdmin = currentProfile?.role === 'admin';
+      const grid = document.getElementById('searchResults');
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div class="empty-state"><i class="fas fa-search"></i><p>Tidak ditemukan</p></div>`;
+      } else {
+        grid.innerHTML = filtered.map(s => renderSnippetCard(s, isAdmin)).join('');
+      }
+    }
+
+    // ===== INIT =====
+    (async () => {
+      const session = await supabase.auth.getSession();
+      if (!session.data.session) {
+        window.location.href = 'auth.html';
+        return;
+      }
+      currentUser = session.data.session.user;
+      await loadProfile(currentUser.id);
+      if (currentProfile) {
+        document.getElementById('userAvatar').textContent = currentProfile.username?.charAt(0) || 'U';
+        document.getElementById('userName').textContent = currentProfile.username || 'User';
+        document.getElementById('userRole').textContent = currentProfile.role || 'user';
+      }
+
+      await loadSnippets();
+
+      // Isi dropdown bahasa & kategori
+      const langs = [...new Set(allSnippets.map(s => s.language).filter(Boolean))];
+      const cats = [...new Set(allSnippets.map(s => s.category).filter(Boolean))];
+      const langSel = document.getElementById('searchLang');
+      const catSel = document.getElementById('searchCategory');
+      langs.forEach(l => { const opt = document.createElement('option');
+        opt.value = l;
+        opt.textContent = l;
+        langSel.appendChild(opt); });
+      cats.forEach(c => { const opt = document.createElement('option');
+        opt.value = c;
+        opt.textContent = c;
+        catSel.appendChild(opt); });
+
+      // Event listeners
+      document.getElementById('searchInput').addEventListener('input', performSearch);
+      document.getElementById('searchLang').addEventListener('change', performSearch);
+      document.getElementById('searchCategory').addEventListener('change', performSearch);
+
+      performSearch();
+    })();
+  </script>
+</body>
+</html>
